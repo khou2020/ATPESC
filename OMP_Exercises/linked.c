@@ -105,23 +105,14 @@ int main(int argc, char *argv[])
 
     // traverse the list process work for each node
     start = omp_get_wtime();
-#pragma omp parllel firstprivate(p)
+#pragma omp parllel
     {
-        int i;
-        int nt, tid;
-
-        nt = omp_get_num_threads();
-        tid = omp_get_thread_num();
-
-        for(i=0;i<tid && p != NULL;i++){
-            p = p->next;
-        }
+        #pragma single 
         while (p != NULL)
         {
+            #pragma omp task
             processwork(p);
-            for(i=0;i<nt && p != NULL;i++){
-                p = p->next;
-            }
+            p = p->next;
         }
     }
     end = omp_get_wtime();
