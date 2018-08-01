@@ -26,9 +26,10 @@ struct d_complex
 	double i;
 };
 
-void testpoint(struct d_complex c);
+int testpoint();
 
 struct d_complex c;
+#pragma omp threadprivate(c)
 int numoutside = 0;
 
 int main(int argc, char *argv[])
@@ -46,14 +47,14 @@ int main(int argc, char *argv[])
 	//   Loop over grid of points in the complex plane which contains the Mandelbrot set,
 	//   testing each point to see whether it is inside or outside the set.
 
-#pragma omp parallel for private(j, c) firstprivate(eps) //reduction(+: numoutside)
+#pragma omp parallel for private(j) firstprivate(eps) reduction(+: numoutside)
 	for (i = 0; i < NPOINTS; i++)
 	{
 		for (j = 0; j < NPOINTS; j++)
 		{
 			c.r = -2.0 + 2.5 * (double)(i) / (double)(NPOINTS) + eps;
 			c.i = 1.125 * (double)(j) / (double)(NPOINTS) + eps;
-			testpoint(c);
+			numoutside += testpoint();
 		}
 	}
 
@@ -66,7 +67,7 @@ int main(int argc, char *argv[])
 	printf("Correct answer should be around 1.510659\n");
 }
 
-void testpoint(struct d_complex c)
+int testpoint()
 {
 
 	// Does the iteration z=z*z+c, until |z| > 2 when point is known to be outside set
@@ -84,9 +85,11 @@ void testpoint(struct d_complex c)
 		z.r = temp;
 		if ((z.r * z.r + z.i * z.i) > 4.0)
 		{
-#pragma omp atomic
+//#pragma omp atomic
+			return 1;
 			numoutside++;
 			break;
 		}
 	}
+	return 0;
 }
