@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
         #pragma omp single 
         while (p != NULL)
         {
-            #pragma omp task
+            #pragma omp task first private(p)
             processwork(p);
             p = p->next;
         }
