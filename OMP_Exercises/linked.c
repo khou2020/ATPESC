@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
     start = omp_get_wtime();
 #pragma omp parllel
     {
-        #pragma single 
+        #pragma omp single 
         while (p != NULL)
         {
             #pragma omp task
