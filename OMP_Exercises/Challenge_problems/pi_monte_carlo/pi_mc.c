@@ -82,38 +82,49 @@ History:
 
 */
 #include <stdio.h>
+#include <stdlib.h>
 #include <omp.h>
 #include "random.h"
 
-// 
+//
 // The monte carlo pi program
 //
 
 static long num_trials = 100000000;
 
-int main ()
+int main(int argc, char* argv[])
 {
-   long i;  long Ncirc = 0;
-   double pi, x, y, test;
-   double r = 1.0;   // radius of circle. Side of squrare is 2*r 
+    long i;
+    long Ncirc = 0;
+    double pi, x, y, test;
+    double r = 1.0; // radius of circle. Side of squrare is 2*r
+    int nthread = 1;
 
-   seed(-r, r);  // The circle and square are centered at the origin
-   double time = omp_get_wtime();
-   for(i=0;i<num_trials; i++)
-   {
-      x = drandom(); 
-      y = drandom();
+    if (argc > 1)
+    {
+        nthread = atoi(argv[1]);
+    }
+    omp_set_num_threads(nthread);
 
-      test = x*x + y*y;
+    seed(-r, r); // The circle and square are centered at the origin
+    double time = omp_get_wtime();
+#pragma omp parallel for private(x, y, test) reduction(+ \
+                                                       : Ncirc)
+    for (i = 0; i < num_trials; i++)
+    {
+        x = drandom();
+        y = drandom();
 
-      if (test <= r*r) Ncirc++;
+        test = x * x + y * y;
+
+        if (test <= r * r)
+            Ncirc++;
     }
 
-    pi = 4.0 * ((double)Ncirc/(double)num_trials);
+    pi = 4.0 * ((double)Ncirc / (double)num_trials);
 
-    printf("\n %ld trials, pi is %lf ",num_trials, pi);
-    printf(" in %lf seconds\n",omp_get_wtime()-time);
+    printf("\n %ld trials, pi is %lf ", num_trials, pi);
+    printf(" in %lf seconds\n", omp_get_wtime() - time);
 
     return 0;
 }
-	  

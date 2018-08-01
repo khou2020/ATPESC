@@ -32,6 +32,7 @@ static long MULTIPLIER  = 1366;
 static long ADDEND      = 150889;
 static long PMOD        = 714025;
 long random_last = 0;
+#pragma omp threadprivate(random_last)
 double random_low, random_hi;
 
 double drandom()
@@ -66,8 +67,10 @@ void seed(double low_in, double hi_in)
       random_low = hi_in;
       random_hi  = low_in;
    }
-   random_last = PMOD/ADDEND;  // just pick something
-
+   #pragma omp parallel
+   {
+    random_last = PMOD/ADDEND;  // just pick something
+   }
 }
 //**********************************************************
 // end of pseudo random generator code.
