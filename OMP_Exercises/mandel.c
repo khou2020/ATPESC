@@ -26,7 +26,7 @@ struct d_complex
 	double i;
 };
 
-int testpoint();
+int testpoint(int *cnt);
 
 struct d_complex c;
 #pragma omp threadprivate(c)
@@ -54,7 +54,8 @@ int main(int argc, char *argv[])
 		{
 			c.r = -2.0 + 2.5 * (double)(i) / (double)(NPOINTS) + eps;
 			c.i = 1.125 * (double)(j) / (double)(NPOINTS) + eps;
-			numoutside += testpoint();
+			//numoutside += testpoint(NULL);
+			testpoint(&numoutside);
 		}
 	}
 
@@ -67,7 +68,7 @@ int main(int argc, char *argv[])
 	printf("Correct answer should be around 1.510659\n");
 }
 
-int testpoint()
+int testpoint(int *cnt)
 {
 
 	// Does the iteration z=z*z+c, until |z| > 2 when point is known to be outside set
@@ -86,8 +87,8 @@ int testpoint()
 		if ((z.r * z.r + z.i * z.i) > 4.0)
 		{
 //#pragma omp atomic
+			(*cnt)++;
 			return 1;
-			numoutside++;
 			break;
 		}
 	}
