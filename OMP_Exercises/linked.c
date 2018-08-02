@@ -17,7 +17,7 @@
 
 // N is the length of the list
 #ifndef N
-#define N 15
+#define N 10
 #endif
 
 // Start computing fibonacci numbers from the FS'th element in
@@ -44,8 +44,17 @@ int fib(int n)
     }
     else
     {
-        x = fib(n - 1);
-        y = fib(n - 2);
+        if (n > 37){
+        #pragma omp task shared(x)
+            x = fib(n - 1);
+        #pragma omp task shared(y)
+            y = fib(n - 2);
+        #pragma omp taskwait
+        }
+        else{
+            x = fib(n - 1);
+            y = fib(n - 2);
+        }
         return (x + y);
     }
 }
@@ -105,12 +114,11 @@ int main(int argc, char *argv[])
 
     // traverse the list process work for each node
     start = omp_get_wtime();
-#pragma omp parllel
+#pragma omp parallel
     {
-        #pragma omp single 
+        #pragma omp single
         while (p != NULL)
         {
-            #pragma omp task first private(p)
             processwork(p);
             p = p->next;
         }
